@@ -27,8 +27,9 @@ public class CyclingPortal implements MiniCyclingPortalInterface {
         for(int i = 0; i < races_all.size(); i++){
             Race raceObject = races_all.get(i);
             for(int j = 0; j < raceObject.race_stages.size(); j++){
-                if(stageID == raceObject.race_stages.get(i).stage_id){
-                    return raceObject.race_stages.get(i);
+                Stage stageObject = raceObject.race_stages.get(j);
+                if(stageID == stageObject.stage_id){
+                    return raceObject.race_stages.get(j);
                 }
             }
         }
@@ -99,6 +100,34 @@ public class CyclingPortal implements MiniCyclingPortalInterface {
         return;
     }
 
+    public double calculateLengthOfStages(int raceID) throws IDNotRecognisedException {
+        Race selectedRace = findRaceID(raceID);
+        int i;
+        double total_length = 0;
+        for( i = 0; i < selectedRace.race_stages.size(); i++ ){
+            // grab the current segment and append to total_length
+            Stage currentStage = selectedRace.race_stages.get(i);
+            total_length += currentStage.stage_length;
+        }
+        return total_length;
+    }
+
+    public double calculateLengthOfSegments(int stageID) throws IDNotRecognisedException {
+        Stage selectedStage = findStageID(stageID);
+        if(selectedStage.segments_in_stage.size() == 0){
+            System.out.println("No segments in stage. Length is 0.0km");
+            return 0.0;
+        }
+        int i;
+        double total_length = 0;
+        for( i = 0; i < selectedStage.segments_in_stage.size(); i++ ){
+            // grab the current segment and append to total_length
+            Segment currentSegment = selectedStage.segments_in_stage.get(i);
+            total_length += currentSegment.length;
+        }
+        return total_length;
+    }
+
     /**
      * Get the races currently created in the platform.
      *
@@ -112,7 +141,7 @@ public class CyclingPortal implements MiniCyclingPortalInterface {
         int i;
         int races_count = races_all.size();
         int[] race_ids = new int[races_count];
-        for( i = 0; i < races_count; i++ ){
+            for( i = 0; i < races_count; i++ ){
             race_ids[i] = races_all.get(i).race_id;
         }
         return race_ids;
@@ -165,7 +194,11 @@ public class CyclingPortal implements MiniCyclingPortalInterface {
      *                                  system.
      */
     public String viewRaceDetails(int raceId) throws IDNotRecognisedException {
-        return "";
+        Race currentRace = findRaceID(raceId);
+
+        String output = "Raced ID: " + raceId + ", Race name: " + currentRace.race_name + ", Race description: " + currentRace.race_description
+                + ", No. of stages: " + currentRace.race_stages.size() + ", Combined length of stages: " + calculateLengthOfStages(raceId);
+        return output;
     }
 
     /**
@@ -321,7 +354,7 @@ public class CyclingPortal implements MiniCyclingPortalInterface {
     public int addCategorizedClimbToStage(int stageId, Double location, SegmentType type, Double averageGradient,
                                    Double length) throws IDNotRecognisedException, InvalidLocationException, InvalidStageStateException,
             InvalidStageTypeException {
-        // perform checks -- catch in executiing catch statement -- If okay, create climb segment
+        // perform checks -- catch in executing catch statement -- If okay, create climb segment
         checkStageID(stageId); // check IDNotRecognised
         checkInvalidLocationException(location, stageId);
         checkInvalidStageStateException(stageId);
@@ -357,7 +390,19 @@ public class CyclingPortal implements MiniCyclingPortalInterface {
      */
     public int addIntermediateSprintToStage(int stageId, double location) throws IDNotRecognisedException,
             InvalidLocationException, InvalidStageStateException, InvalidStageTypeException {
-        return 0;
+        checkStageID(stageId);
+        Stage currentStage = findStageID(stageId);
+        checkInvalidLocationException(location, stageId);
+        checkInvalidStageStateException(stageId);
+        checkInvalidStageTypeException(currentStage.stage_type);
+
+        // if above checks are passed, create the sprint segment
+        Random r = new Random();
+        IntermediateSprintSegment sprintSegment = new IntermediateSprintSegment(stageId, location, currentStage.stage_length);
+        int seg_id = r.nextInt(100);
+        sprintSegment.segment_id = seg_id;
+        currentStage.segments_in_stage.add(sprintSegment);
+        return seg_id;
     }
 
     /**
@@ -388,7 +433,12 @@ public class CyclingPortal implements MiniCyclingPortalInterface {
      * @throws InvalidStageStateException If the stage is "waiting for results".
      */
     public void concludeStagePreparation(int stageId) throws IDNotRecognisedException, InvalidStageStateException {
+        checkStageID(stageId);
+        Stage currentStage = findStageID(stageId);
+        checkInvalidStageStateException(stageId);
 
+        currentStage.stage_complete = true;
+        return;
     }
 
     /**

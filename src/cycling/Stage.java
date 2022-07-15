@@ -10,7 +10,7 @@ public class Stage {
     String stage_description;
     StageType stage_type;  // value of this dictates the points classification
     double stage_length;
-    boolean stage_complete = false;  // true when the stage configuration is complete
+    public boolean stage_complete = false;  // true when the stage configuration is complete
     int race_id;
     public int stage_id;
     LocalDateTime start_time;

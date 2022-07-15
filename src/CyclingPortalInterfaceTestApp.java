@@ -1,12 +1,8 @@
-import cycling.BadMiniCyclingPortal;
 import cycling.IllegalNameException;
 import cycling.InvalidNameException;
-import cycling.MiniCyclingPortalInterface;
 import cycling.*;
-import cycling.stage.*;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 
 /**
  * A short program to illustrate an app testing some minimal functionality of a
@@ -37,20 +33,42 @@ public class CyclingPortalInterfaceTestApp {
 			portal1.createRace("Tour4", "The fourth race");
 
 			int race1_id = portal1.getRaceIds()[0];  // id of the first race
+			Race currentRace = portal1.findRaceID(race1_id);
 
 			portal1.addStageToRace(race1_id, "StageA", "This is stage A", 10.0, LocalDateTime.now(), StageType.FLAT);
-			portal1.addStageToRace(race1_id, "StageB", "This is stage A", 10.0, LocalDateTime.now(), StageType.FLAT);
+			portal1.addStageToRace(race1_id, "StageB", "This is stage B", 10.0, LocalDateTime.now(), StageType.FLAT);
+
+
 
 			// get stage object
-			Stage stage1 = CyclingPortal.races_all.get(0).race_stages.get(0);
+			Stage stage1 = currentRace.race_stages.get(0);
+			Stage stage2 = currentRace.race_stages.get(1);
 
-			int stageID = stage1.stage_id;
+			int stage_1_id = stage1.stage_id;
+			int stage_2_id = stage2.stage_id;
 
-			portal1.addCategorizedClimbToStage(stageID, 2.0, SegmentType.C1, 2.5, 8.0);
+			System.out.println(stage_1_id);
+			System.out.println(stage_2_id);
 
-			Segment seg1 = stage1.segments_in_stage.get(0);
+			System.out.println(stage1.stage_complete);
+			System.out.println(stage2.stage_complete);
 
-			System.out.println(Arrays.toString(seg1.points_spec));
+
+
+			portal1.addCategorizedClimbToStage(stage_1_id, 2.0, SegmentType.C1, 2.5, 1.0);
+			portal1.addCategorizedClimbToStage(stage_1_id, 4.0, SegmentType.C1, 2.5, 1.0);
+			portal1.addIntermediateSprintToStage(stage_1_id, 5.0);
+
+
+			portal1.concludeStagePreparation(stage_1_id);
+			portal1.concludeStagePreparation(stage_2_id);
+
+			System.out.println(stage1.stage_complete);
+			System.out.println(stage2.stage_complete);
+
+			System.out.println(portal1.viewRaceDetails(race1_id));
+
+
 
 
 
